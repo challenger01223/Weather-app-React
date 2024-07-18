@@ -27,3 +27,13 @@ export const CITIES = [
     'Quito',
     'Hanoi'
 ]
+
+export const DATES = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun'
+]

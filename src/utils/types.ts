@@ -5,7 +5,7 @@ export interface ISvg {
     handleClick?: () => void
 }
 
-export interface IWeather {
+export type IWeather = {
     type: string;
     main: {
         temp: number,
@@ -14,4 +14,11 @@ export interface IWeather {
     },
     sunrise: number,
     sunset: number
+}
+
+export type IForecast = {
+    type: string,
+    temp_max: number,
+    temp_min: number,
+    day: string
 }

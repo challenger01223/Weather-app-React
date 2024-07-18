@@ -1,40 +1,51 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { CITIES, COLORS } from "@/utils/constants";
+import { CITIES, DATES } from "@/utils/constants";
 import { RootState } from "@/store";
 import { apis } from "@/apis";
 import { setCity, setForecast } from "@/store/slices/weatherSlice";
-import { SVGS } from "@/components/svgs";
 import Forecast from "@/components/Forecast";
 import Button from "@/components/Button";
 import Grid from "@/components/Grid";
 import { WeatherContainer, CityContainer } from "@/styles";
-import { IWeather } from "@/utils/types";
+import { IForecast, IWeather } from "@/utils/types";
 import { OutPutTime } from "@/utils";
+import WeatherIcon from "@/components/WeatherIcon";
 
 const Weather = () => {
    const dispatch = useDispatch();
    const { city, forecast, unit, type } = useSelector((state: RootState) => state.weather);
    const [loading, setLoading] = React.useState(false);
    const [weather, setWeather] = React.useState<IWeather | null>(null)
-   const [weathers, setWeathers] = React.useState<any>(null);
+   const [weathers, setWeathers] = React.useState<Array<IForecast>>([]);
 
-   const GetWeatherInfo = async (c: string) => {
+   const GetWeatherInfo = async () => {
       try {
          setLoading(true)
          setWeather(null);
-         dispatch(setForecast('NOW'));
-         dispatch(setCity(c));
-         const response: any = await apis.GetGeocoding(c);
+         setWeathers([]);
+         const response: any = await apis.GetGeocoding(city as string);
          const lat = response[0].lat;
          const lon = response[0].lon;
-         const res: any = await apis.GetCurrentWeather(lat, lon, unit);
-         setWeather({
-            type: res.weather[0].main,
-            main: res.main,
-            sunrise: res.sys.sunrise,
-            sunset: res.sys.sunset
-         })
+         if (forecast === 'NOW') {
+            const res: any = await apis.GetCurrentWeather(lat, lon, unit);
+            setWeather({
+               type: res.weather[0].main,
+               main: res.main,
+               sunrise: res.sys.sunrise,
+               sunset: res.sys.sunset
+            })
+         } else {
+            const res: any = await apis.Get5DaysForecast(lat, lon, unit);
+            setWeathers(res.list.filter((_: any, index: number) => index % 8 === 0).map((weather: any) => {
+               return {
+                  type: weather.weather[0].main,
+                  temp_max: weather.main.temp_max,
+                  temp_min: weather.main.temp_min,
+                  day: DATES[new Date(weather.dt * 1000).getDay()]
+               }
+            }))
+         }
       } catch (err) {
          console.log(err);
       } finally {
@@ -42,9 +53,15 @@ const Weather = () => {
       }
    }
 
+   React.useEffect(() => {
+      if (city) {
+         GetWeatherInfo();
+      }
+   }, [forecast, city])
+
    return (
       <WeatherContainer>
-         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 200 }}>
+         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 100 }}>
             {city ?
                <div>
                   <div>
@@ -53,7 +70,7 @@ const Weather = () => {
                         <>
                            {(!loading && weather) ?
                               <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                                 <SVGS.WeatherCloudySvg fillColor={COLORS.BLUE} width={150} height={150} />
+                                 <WeatherIcon type={weather.type}/>
                                  <h3>{weather.type}</h3>
                                  <div style={{ position: 'absolute', left: 'calc(50% + 200px)', top: '50%', transform: 'translate(-50%, -50%)', minWidth: 200, display: 'flex', flexDirection: 'column', gap: 10 }}>
                                     <h4>Temp: {weather.main.temp}</h4>
@@ -67,7 +84,7 @@ const Weather = () => {
                         </>
                         :
                         <div style={{ display: 'flex', justifyContent: 'center', gap: 20 }}>
-                           {Array(5).fill(0).map((_, index) => <Forecast key={index} />)}
+                           {weathers.map((we: IForecast, index: number) => <Forecast key={index} forecast={we} />)}
                         </div>
                      }
                   </div>
@@ -86,7 +103,10 @@ const Weather = () => {
          <CityContainer>
             <Grid>
                {CITIES.map((c: string, index: number) => (
-                  <Button styles={{ padding: '15px' }} key={index} isActive={city === c} onClick={() => GetWeatherInfo(c)}>{c}</Button>
+                  <Button styles={{ padding: '10px' }} key={index} isActive={city === c} onClick={() => {
+                     dispatch(setForecast('NOW'));
+                     dispatch(setCity(c));
+                  }}>{c}</Button>
                ))}
             </Grid>
          </CityContainer>

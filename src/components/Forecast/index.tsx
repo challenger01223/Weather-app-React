@@ -1,18 +1,17 @@
-import { COLORS } from "@/utils/constants";
-import { SVGS } from "../svgs";
+import { IForecast } from "@/utils/types";
+import WeatherIcon from "../WeatherIcon";
 
-interface IForecast {
-    high?: number;
-    low?: number;
+interface ForecastProps {
+    forecast: IForecast
 }
 
-const Forecast: React.FC<IForecast> = ({ }) => {
+const Forecast: React.FC<ForecastProps> = ({ forecast }) => {
     return (
         <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center' }}>
-            <h3>Fri</h3>
-            <SVGS.WeatherCloudySvg fillColor={COLORS.BLUE} width={120} height={120} />
-            <h3>Clouds</h3>
-            <h4>H: 31°C/L: 24°C</h4>
+            <h3>{forecast.day}</h3>
+            <WeatherIcon type={forecast.type} />
+            <h3>{forecast.type}</h3>
+            <h4>H: {forecast.temp_max}/L: {forecast.temp_min}</h4>
         </div>
     )
 };
