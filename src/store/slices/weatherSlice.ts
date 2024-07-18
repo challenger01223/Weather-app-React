@@ -3,16 +3,16 @@ import { createSlice } from "@reduxjs/toolkit";
 interface IinitialState {
     city: null | string,
     forecast: 'NOW' | '5-DAYS',
-    time: Date,
+    time: number,
     unit: 'metric' | 'standard' | 'imperial',
     type: 'AM/PM' | '24H'
 }
 
 export const initialState: IinitialState = {
     city: null,
-    time: new Date(),
+    time: new Date().getTime(),
     forecast: 'NOW',
-    unit: 'metric',
+    unit: 'standard',
     type: '24H'
 };
 

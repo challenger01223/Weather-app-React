@@ -25,7 +25,7 @@ const Header = () => {
 
     React.useEffect(() => {
         const interval = setInterval(() => {
-            dispatch(setTime(new Date()));
+            dispatch(setTime(new Date().getTime()));
         }, 1000);
 
         return () => clearInterval(interval);
