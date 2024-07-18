@@ -6,3 +6,24 @@ export const COLORS = {
     BLUE: '#0A84FF',
     CYAN: '#64D2FF'
 }
+
+export const CITIES = [
+    'Brussels',
+    'Algiers',
+    'Bucharest',
+    'Brasilia',
+    'New Delhi',
+    'Warsaw',
+    'Athens',
+    'Stockholm',
+    'Kuala Lumpur',
+    'Tokyo',
+    'Cairo',
+    'Beijing',
+    'Berlin',
+    'Santiago',
+    'Bangkok',
+    'Ottawa',
+    'Quito',
+    'Hanoi'
+]

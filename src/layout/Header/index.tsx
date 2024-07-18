@@ -1,58 +1,72 @@
 import React from "react";
-import styled from 'styled-components';
-import { COLORS } from "@/utils/constants";
+import { CITIES, COLORS } from "@/utils/constants";
 import { SVGS } from "@/components/svgs";
-
-const HeaderDiv = styled.div`
-    display: flex;
-    height: 40px;
-    justify-content: space-between;
-    align-items: center;
-`;
-
-const TimeSpan = styled.span`
-    font-size: 20px;
-`;
-
-const HeaderBtn = styled.button`
-    color: ${COLORS.WHITE};
-    cursor: pointer;
-    outline: none;
-    background-color: transparent;
-    border: none;
-    font-size: 18px;
-
-    &:hover {
-        color: ${COLORS.BLUE}
-    }
-`;
+import { HeaderContainer, HeaderButton, SearchInput, HeaderButtonContainer, SerachContainer } from "@/styles";
+import { useDispatch, useSelector } from "react-redux";
+import { setCity, setTime } from "@/store/slices/weatherSlice";
+import Modal from "@/components/Modal";
+import { RootState } from "@/store";
+import { OutPutTime } from "@/utils";
 
 const Header = () => {
-    const [time, setTime] = React.useState<Date>(new Date());
+    const dispatch = useDispatch();
+    const { time, type } = useSelector((state: RootState) => state.weather);
+    const [open, setOpen] = React.useState(false);
+    const [search, setSearch] = React.useState<string>("");
+    const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+
+    const FindCity = () => {
+        if (search === "") return;
+        const cityIndex = CITIES.findIndex((c: string) => c.toLowerCase().includes(search.toLowerCase()));
+        if (cityIndex !== -1) {
+            dispatch(setCity(CITIES[cityIndex]));
+        }
+    }
 
     React.useEffect(() => {
         const interval = setInterval(() => {
-            setTime(new Date());
+            dispatch(setTime(new Date()));
         }, 1000);
 
         return () => clearInterval(interval);
     }, []);
 
     return (
-        <HeaderDiv>
-            <TimeSpan>
-                {time.getHours()}:{`${time.getMinutes() < 10 ? '0' : ''}${time.getMinutes()}`}
-            </TimeSpan>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                gap: '10px'
-            }}>
-                <HeaderBtn>Search</HeaderBtn>
-                <HeaderBtn>Settings</HeaderBtn>
-                <SVGS.ThemeSwitchSvg fillColor={COLORS.WHITE} width={20} height={20} />
-            </div>
-        </HeaderDiv>
+        <>
+            <HeaderContainer>
+                <span style={{ fontSize: 20 }}>
+                    {OutPutTime(time, type)}
+                </span>
+                <HeaderButtonContainer>
+                    {isSearchOpen ?
+                        <SerachContainer>
+                            <SearchInput
+                                value={search}
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                    setSearch(event.target.value);
+                                }}
+                                onKeyUp={(event: React.KeyboardEvent<HTMLInputElement>) => {
+                                    if (event.key === 'Enter') {
+                                        FindCity()
+                                    }
+                                }}
+                            />
+                            <SVGS.CloseCircleSvg
+                                fillColor="white"
+                                width={15}
+                                height={15}
+                                handleClick={() => setIsSearchOpen(false)}
+                            />
+                        </SerachContainer>
+                        :
+                        <HeaderButton onClick={() => setIsSearchOpen(true)}>Search</HeaderButton>
+                    }
+                    <HeaderButton onClick={() => setOpen(true)}>Settings</HeaderButton>
+                    <SVGS.ThemeSwitchSvg fillColor={COLORS.WHITE} width={20} height={20} />
+                </HeaderButtonContainer>
+            </HeaderContainer>
+            <Modal open={open} setOpen={setOpen} />
+        </>
     )
 };
 
